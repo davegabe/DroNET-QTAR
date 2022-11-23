@@ -6,6 +6,7 @@ class QLearningRouting(BASE_routing):
 
     def __init__(self, drone, simulator):
         BASE_routing.__init__(self, drone, simulator)
+        self.q_table = {}
         self.taken_actions = {}  # id event : (old_state, old_action)
 
     def feedback(self, drone, id_event, delay, outcome):
