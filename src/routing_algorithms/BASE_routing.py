@@ -12,15 +12,13 @@ class BASE_routing(metaclass=abc.ABCMeta):
         """ The drone that is doing routing and simulator object. """
 
         self.drone = drone
-        self.simulator = simulator
-
-        if self.simulator.communication_error_type == config.ChannelError.GAUSSIAN:
-            self.buckets_probability = self.__init_guassian()
-
         self.current_n_transmission = 0
         self.hello_messages = {}  # { drone_id : most recent hello packet}
         self.network_disp = simulator.network_dispatcher
         self.simulator = simulator
+
+        if self.simulator.communication_error_type == config.ChannelError.GAUSSIAN:
+            self.buckets_probability = self.__init_guassian()
         self.no_transmission = False
 
     @abc.abstractmethod
@@ -87,8 +85,7 @@ class BASE_routing(metaclass=abc.ABCMeta):
             self.current_n_transmission = 0
             return
 
-        if self.drone.identifier != 0:
-            return
+
 
         if cur_step % self.simulator.drone_retransmission_delta == 0:
 

@@ -198,10 +198,10 @@ class Depot(Entity):
     def all_packets(self):
         return self.__buffer
 
-    def transfer_notified_packets(self, drone, cur_step):
+    def transfer_notified_packets(self, current_drone, cur_step):
         """ function called when a drone wants to offload packets to the depot """
 
-        packets_to_offload = drone.all_packets()
+        packets_to_offload = current_drone.all_packets()
         self.__buffer += packets_to_offload
 
         for pck in packets_to_offload:
@@ -211,10 +211,11 @@ class Depot(Entity):
                 feedback = 1
                 delivery_delay = cur_step - pck.event_ref.current_time
 
-                self.simulator.drones[0].routing_algorithm.feedback(drone,
-                                                                    pck.event_ref.identifier,
-                                                                    delivery_delay,
-                                                                    feedback)
+                for drone in self.simulator.drones:
+                    drone.routing_algorithm.feedback(current_drone,
+                                                     pck.event_ref.identifier,
+                                                     delivery_delay,
+                                                     feedback)
 
             # add metrics: all the packets notified to the depot
             self.simulator.metrics.drones_packets_to_depot.add((pck, cur_step))
@@ -279,12 +280,13 @@ class Drone(Entity):
                 if self.simulator.routing_algorithm.name not in "GEO" "RND" "GEOS":
 
                     feedback = -1
-                    drone = self
+                    current_drone = self
 
-                    self.simulator.drones[0].routing_algorithm.feedback(drone,
-                                                                        pck.event_ref.identifier,
-                                                                        self.simulator.event_duration,
-                                                                        feedback)
+                    for drone in self.simulator.drones:
+                        drone.routing_algorithm.feedback(current_drone,
+                                                         pck.event_ref.identifier,
+                                                         self.simulator.event_duration,
+                                                         feedback)
         self.__buffer = tmp_buffer
 
         if self.buffer_length() == 0:
