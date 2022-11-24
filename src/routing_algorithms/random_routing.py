@@ -7,7 +7,7 @@ class RandomRouting(BASE_routing):
     def __init__(self, drone, simulator):
         BASE_routing.__init__(self, drone, simulator)
 
-    def relay_selection(self, opt_neighbors):
+    def relay_selection(self, opt_neighbors, packet):
         """
         This function returns a random relay for packets.
 

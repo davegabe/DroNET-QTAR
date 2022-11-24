@@ -8,7 +8,7 @@ class GeoRouting(BASE_routing):
 
     def relay_selection(self, opt_neighbors, packet):
         """
-        This function returns a relay for packets according to geographic routing using C2S criteria.
+        This function returns a relay for packets according to geographic routing.
 
         @param packet:
         @param opt_neighbors: a list of tuples (hello_packet, drone)
