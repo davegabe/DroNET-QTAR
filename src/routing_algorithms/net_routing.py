@@ -37,7 +37,7 @@ class MediumDispatcher:
                 if src_drone.identifier != dst_drone.identifier:
                     drones_distance = util.euclidean_distance(src_drone.coords, dst_drone.coords)
                     if drones_distance <= min(src_drone.communication_range, dst_drone.communication_range):
-                        if dst_drone.routing_algorithm.channel_success(drones_distance):
+                        if dst_drone.routing_algorithm.channel_success(drones_distance, no_error=True):
                             dst_drone.routing_algorithm.drone_reception(src_drone, packet, current_ts)  # reception of a packet
 
         original_self_packets = [original_self_packets[i] for i in range(len(original_self_packets)) if i not in to_drop_indices]
