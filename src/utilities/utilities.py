@@ -186,6 +186,26 @@ def json_to_paths(json_file_path):
             out_data[drone_index] = drone_path
     return out_data
 
+def clean_paths(json_file_path):
+
+    out_data = {"drones":[]}
+    with open(json_file_path, 'r') as in_file:
+        data = json.load(in_file)
+        for drone_data in data["drones"]:
+            drone_index = int(drone_data["index"])
+            partial_dict = {"index": drone_index}
+            drone_path = []
+            for k, waypoint in enumerate(drone_data["tour"]):
+                if k == 10:
+                    drone_path.append("(750, 0)")
+                    partial_dict["tour"] = drone_path
+                    break
+                drone_path.append(waypoint)
+            out_data[drone_index] = drone_path
+            out_data["drones"].append(partial_dict)
+
+    return out_data
+
 
 class LimitedList:
     """ Time window """
@@ -362,3 +382,11 @@ class TraversedCells:
 
         x_cells = np.ceil(width_area / size_cell)  # numero di celle su X
         return x_cell_coords + (x_cells * y_cell_coords)
+
+
+if __name__ == "__main__":
+
+    out_data = clean_paths("data/tours/RANDOM_missions0.json")
+
+    with open("data/tours/RANDOM_missions0.json", 'w') as outfile:
+        json.dump(out_data, outfile)
