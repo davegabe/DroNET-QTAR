@@ -1,3 +1,4 @@
+from __future__ import annotations
 """ To clean. """
 
 from src.utilities import config
@@ -11,9 +12,14 @@ import numpy as np
 import pickle
 from ast import literal_eval as make_tuple
 from src.utilities import random_waypoint_generation
+import numpy as np
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from src.simulation.simulator import Simulator
+    from src.entities.uav_entities import Drone
 
-def compute_circle_path(radius: int, center: tuple) -> list:
+def compute_circle_path(radius: int, center: tuple[float, float]) -> list:
     """ compute a set of finite coordinates to simulate a circle trajectory of input radius around a given center
 
         radius : int -> the radius of the trajectory
@@ -31,42 +37,42 @@ def compute_circle_path(radius: int, center: tuple) -> list:
     return [(x + center[0], y + center[1]) for x, y in coords]
 
 
-def date():
+def date() -> str:
     return str(time.strftime("%d%m%Y-%H%M%S"))
 
 
-def euclidean_distance(p1, p2):
+def euclidean_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
     """ Given points p1, p2 in R^2 it returns the norm of the vector connecting them.  """
     dist = ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** 0.5
     return dist
 
 
-def pickle_data(data, filename):
+def pickle_data(data: str, filename: str):
     """ save the metrics on file """
     with open(filename, 'wb') as out:
         pickle.dump(data, out)
 
 
-def unpickle_data(filename):
+def unpickle_data(filename: str): #TODO: type
     """ load the metrics from a file """
     with open(filename, 'rb') as handle:
         obj = pickle.load(handle)
     return obj
 
 
-def save_txt(text, file):
+def save_txt(text: str, file: str):
     with open(file, "w") as f:
         f.write(text)
 
 
-def angle_between_points(p1, p2, p3):
+def angle_between_points(p1: tuple[float, float], p2: tuple[float, float], p3: tuple[float, float]) -> float:
     # p1=d_0, p2=D, p3=d_i
     v1 = np.array(p1) - np.array(p2)
     v2 = np.array(p1) - np.array(p3)
     return np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
 
 
-def projection_on_line_between_points(p1, p2, p3):
+def projection_on_line_between_points(p1: tuple[float, float], p2: tuple[float, float], p3: tuple[float, float]) -> float:
     # p1=d_0, p2=D, p3=d_i
     return euclidean_distance(p1, p3) * np.cos(angle_between_points(p1, p2, p3))
 
@@ -74,7 +80,7 @@ def projection_on_line_between_points(p1, p2, p3):
 # ------------------ Event (Traffic) Generator ----------------------
 class EventGenerator:
 
-    def __init__(self, simulator):
+    def __init__(self, simulator: Simulator):
         """
         :param simulator: the main simulator object
         """
@@ -83,7 +89,7 @@ class EventGenerator:
         # for now no random on number of event generated
         # self.rnd_event = np.random.RandomState(self.simulator.seed)
 
-    def handle_events_generation(self, cur_step: int, drones: list):
+    def handle_events_generation(self, cur_step: int, drones: list[Drone]):
         """
         at fixed time randomly select a drone from the list and sample on it a packet/event.
 
@@ -109,14 +115,12 @@ class PathManager:
         """
         self.path_from_json = path_from_json
         self.json_file = json_file.format(seed)
+        self.rnd_paths = np.random.RandomState(seed)
+        self.path_dict = dict() #TODO: type
         if path_from_json:
             self.path_dict = json_to_paths(self.json_file)
-            self.rnd_paths = None
-        else:
-            self.path_dict = None
-            self.rnd_paths = np.random.RandomState(seed)
 
-    def path(self, drone_id, simulator):
+    def path(self, drone_id: int, simulator: Simulator):
         """ takes the drone id and
             returns a path (list of tuple)
             for it.
@@ -137,8 +141,8 @@ class PathManager:
                                                        random_generator=self.rnd_paths,
                                                        range_decision=config.RANDOM_STEPS,
                                                        random_starting_point=config.RANDOM_START_POINT)
-
-    def __cirlce_path(self, drone_id, simulator, center=None, radius=None):
+    #TODO: type for stuff down this
+    def __cirlce_path(self, drone_id: int, simulator: Simulator, center=None, radius=None):
         if center is None:
             center = simulator.depot_coordinates
         if radius is None:
