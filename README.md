@@ -4,41 +4,22 @@
 DroNET is a Python based simulator for experimenting routing algorithms and mobility models on unmanned aerial vehicle 
 networks. 
 
+# Setup
+The project is developed using Python 3.7. To install the required packages, you can use the provided conda environment:
+
+```bash
+conda env create -f environment.yml
+```
+
+
 ## Execution
 
-In order to start the simulator from the terminal, clone the git project and place yourself in ``DroNETworkSimulator`` directory, then and run:
+In order to start the simulator you can run the following command:
 
 ```bash
+conda activate droNET
 python -m src.main
 ```
-You can also use the terminal from PyCharm using the same command. 
-In order to get all the requirements properly installed you can use the virtual environment ``venv`` placed inside the main directory.
-To activate the environment on **Windows** use the command below. REMEMBER, you must be inside the DroNETworkSimulator folder.
-```windows
-.\venv\Scripts\activate
-```
-To activate the environment on **Linux** use the command below. 
-```bash
-source .\venv\Scripts\activate
-```
-After the environment activation you can use pip to install all the requirements needed
-
-```bash
-pip install -r requirements.txt
-```
-
-
-## Known Issues
-
-**PLEASE** use python 3.7, other python versions have compatibility issues with some libraries.
-
-- PyGame could not work with python versions > 3.7.
-- To install PyGame you may need to use pip  
-
-**IMPORTANT**: if you find other issues please drop a mail to us describing what is 
-the issue including also screens or error messages flavio.giorgi[AT]uniroma1.it or giulio.attenni[AT]uniroma1.it
- 
-**PLEASE: USE [AUTONOMOUS NETWORKING] as email object and send the email always to both of us adding one of us in CC** 
 
 ## Simulator structure 
 The project has the following structure:
@@ -71,9 +52,9 @@ specify all the constants and parameters for a one-shot simulation, ideal when o
 the quality of a routing algorithm making frequent executions. Constants and parameters should **always** be added here
 and never be hard-coded.
 
-## Contacts
-For further information contact Flavio Giorgi  **flavio.giorgi[AT]uniroma1.it**  or Giulio Attenni **giulio.attenni[AT]uniroma1.it**
-
 ## Thanks and License
 The current version of the simulator is free for non-commercial use.
-The simulator was done by Andrea Coletta in collaboration with Matteo Prata, PhD Student at La Sapienza  **coletta[AT]di.uniroma1.it**, **prata[AT]di.uniroma1.it**.
+
+This project is based on the paper [A Q-Learning-Based Topology-Aware Routing Protocol for Flying Ad Hoc Networks](https://ieeexplore.ieee.org/document/9456858)
+
+The simulator was done by Andrea Coletta in collaboration with Matteo Prata, PhD Student at La Sapienza  **coletta[AT]di.uniroma1.it**, **prata[AT]di.uniroma1.it** and [later extended](https://github.com/flaat/DroNETworkSimulator) by Flavio Giorgi  **flavio.giorgi[AT]uniroma1.it** and Giulio Attenni **giulio.attenni[AT]uniroma1.it**.
