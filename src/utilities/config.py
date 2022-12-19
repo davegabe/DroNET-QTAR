@@ -27,9 +27,9 @@ Attributes that one needs tweak often are tagged with # ***
 CIRCLE_PATH = False # bool: whether to use cirlce paths around the depot
 DEMO_PATH = False   # bool: whether to use handcrafted tours or not
 # to set up handcrafted torus see utilities.utilities
-PATH_FROM_JSON = False                   # bool: whether to use the path (for drones) store in the JSONS_PATH_PREFIX,
+PATH_FROM_JSON = True                   # bool: whether to use the path (for drones) store in the JSONS_PATH_PREFIX,
                                             # otherwise path are generated online
-JSONS_PATH_PREFIX = "data/tours/RANDOM_missions{}.json"     # str: the path to the drones tours,
+JSONS_PATH_PREFIX = "data/tours/RANDOM_missions0.json"     # str: the path to the drones tours,
                                             # the {} should be used to specify the seed -> es. data/tours/RANDOM_missions1.json for seed 1.
 RANDOM_STEPS = [250, 500, 700, 900, 1100, 1400]  # the step after each new random directions is taken, in case of dynamic generation
 RANDOM_START_POINT = True  # bool whether the drones start the mission at random positions
@@ -42,7 +42,7 @@ EXPERIMENTS_DIR = "data/evaluation_tests/"  # output data : the results of the s
 # drawaing
 PLOT_SIM = False      # bool: whether to plot or not the simulation.
 WAIT_SIM_STEP = 0 #.1     # float: seconds, pauses the rendering for 'DELAY_PLOT' seconds.
-SKIP_SIM_STEP = 5      # int: steps, plot the simulation every 'RENDERING_STEP' steps. At least 1.
+SKIP_SIM_STEP = 10      # int: steps, plot the simulation every 'RENDERING_STEP' steps. At least 1.
 DRAW_SIZE = 700       # int: size of the drawing window.
 IS_SHOW_NEXT_TARGET_VEC = True  # bool : whether show the direction and next target of the drone
 
@@ -53,30 +53,30 @@ SAVE_PLOT_DIR = "data/plots/"
 # add constants here...
 
 # ----------------------------- SIMULATION PARAMS. ---------------------------- #
-SIM_DURATION = 15000   # int: steps of simulation. # ***
+SIM_DURATION = 18000   # int: steps of simulation. # ***
 TS_DURATION = 0.150   # float: seconds duration of a step in seconds.
-SEED = 20         # int: seed of this simulation.
+SEED = 10  # int: seed of this simulation.
 
-N_DRONES = 5      # int: number of drones. # ***
+N_DRONES = 5    # int: number of drones. # ***
 ENV_WIDTH = 1500      # float: meters, width of environment.
 ENV_HEIGHT = 1500     # float: meters, height of environment.
 
 # events
-EVENTS_DURATION = 2000  # SIM_DURATION  # int: steps, number of time steps that an event lasts  -> to seconds = step * step_duration.
+EVENTS_DURATION = 1500  # SIM_DURATION  # int: steps, number of time steps that an event lasts  -> to seconds = step * step_duration.
 D_FEEL_EVENT = 65      # int: steps, a new packet is felt (generated on the drone) every 'D_FEEL_EVENT' steps. # ***
 P_FEEL_EVENT = .8       # float: probability that the drones feels the event generated on the drone. # ***
 
 """ e.g. given D_FEEL_EVENT = 500, P_FEEL_EVENT = .5, every 500 steps with probability .5 the drone will feel an event."""
 
 # drones
-COMMUNICATION_RANGE_DRONE = 200  # float: meters, communication range of the drones.
+COMMUNICATION_RANGE_DRONE = 150  # float: meters, communication range of the drones.
 SENSING_RANGE_DRONE = 0        # float: meters, the sensing range of the drones.
 DRONE_SPEED = 8                  # float: m/s, drone speed.
-DRONE_MAX_BUFFER_SIZE = 100     # int: max number of packets in the buffer of a drone.
+DRONE_MAX_BUFFER_SIZE = 10000     # int: max number of packets in the buffer of a drone.
 DRONE_MAX_ENERGY = 1000000           # int: max energy of a drone.
 
 # depot
-DEPOT_COMMUNICATION_RANGE = 200  # float: meters, communication range of the depot.
+DEPOT_COMMUNICATION_RANGE = 150  # float: meters, communication range of the depot.
 DEPOT_COO = (750, 0)             # (float, float): coordinates of the depot.
 
 
@@ -100,7 +100,7 @@ class ChannelError(Enum):
         return list(map(lambda c: c.name, ChannelError))
 
 
-ROUTING_ALGORITHM = RoutingAlgorithm.QL
+ROUTING_ALGORITHM = RoutingAlgorithm.GEO
 CHANNEL_ERROR_TYPE = ChannelError.GAUSSIAN
 
 COMMUNICATION_P_SUCCESS = 1   # float: probability to have success in a communication.

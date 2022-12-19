@@ -49,7 +49,6 @@ class QLearningRouting(BASE_routing):
     def relay_selection(self, opt_neighbors: list, packet):
         """
         This function returns the best relay to send packets.
-
         @param packet:
         @param opt_neighbors: a list of tuple (hello_packet, source_drone)
         @return: The best drone to use as relay

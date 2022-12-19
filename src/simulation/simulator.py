@@ -88,7 +88,7 @@ class Simulator:
         self.__set_simulation()
         self.__set_metrics()
 
-        self.simulation_name = "simulation-" + utilities.date() + "_" + str(simulation_name) + "_" + str(self.seed) + "_" + str(self.n_drones) + "_" + str(self.routing_algorithm)
+        self.simulation_name = "out__" + str(self.seed) + "_" + str(self.n_drones) + "_" + str(self.routing_algorithm)
         self.simulation_test_dir = self.simulation_name + "/"
 
         self.start = time.time()
@@ -198,7 +198,7 @@ class Simulator:
         @return: None
         """
 
-        for cur_step in range(self.len_simulation):
+        for cur_step in tqdm(range(self.len_simulation)):
             
             self.cur_step = cur_step
             # check for new events and remove the expired ones from the environment
@@ -246,14 +246,3 @@ class Simulator:
         self.metrics.save_as_json(filename_path + ".json")
         if save_pickle:
             self.metrics.save(filename_path + ".pickle")
-
-    def score(self):
-        """ returns a score for the exectued simulation: 
-
-                sum( event delays )  / number of events
-
-            Notice that, expired or not found events will be counted with a max_delay
-        """
-        score = round(self.metrics.score(), 2)
-        print("Score sim " + self.simulation_name + ":", score)
-        return score

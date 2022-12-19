@@ -239,6 +239,7 @@ class Depot(Entity):
                                                      pck.event_ref.identifier,
                                                      delivery_delay,
                                                      feedback)
+            #print(f"DEPOT -> Drone {current_drone.identifier} packet: {pck.event_ref} total packets in sim: {len(self.simulator.metrics.drones_packets_to_depot)}")
 
             # add metrics: all the packets notified to the depot
             self.simulator.metrics.drones_packets_to_depot.add((pck, cur_step))
@@ -352,6 +353,7 @@ class Drone(Entity):
         feel a new event, and adds the packet relative to it, in its buffer.
             if the drones is doing movement the packet is not added in the buffer
          """
+
         ev = Event(self.coords, cur_step, self.simulator)  # the event
         pk = ev.as_packet(cur_step, self)  # the packet of the event
         if not self.move_routing and not self.come_back_to_mission:
