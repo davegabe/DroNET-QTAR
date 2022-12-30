@@ -200,7 +200,7 @@ class HelloPacket(Packet):
     """ The hello message is responsible to give info about neighborhood """
 
     # TODO: type
-    def __init__(self, src_drone: Drone, time_step_creation: int, simulator: Simulator, cur_pos: tuple[float, float], speed, next_target: tuple[float, float], link_holding_timer=0, neighbors_one_hop=[], neighbors_two_hop = []):
+    def __init__(self, src_drone: Drone, time_step_creation: int, simulator: Simulator, cur_pos: tuple[float, float], speed, next_target: tuple[float, float], link_holding_timer: float = 0, one_hop_neighbors=[], two_hop_neighbors=[]):
         super().__init__(time_step_creation, simulator, None)
         self.cur_pos = cur_pos
         self.speed = speed
@@ -214,12 +214,8 @@ class HelloPacket(Packet):
         src_drone.sequence_number = src_drone.sequence_number + 1
 
         # list of neighbors
-        self.cur_neighbors_one_hop = neighbors_one_hop  # one hop neighbors N1
-        self.cur_neighbors_two_hop = neighbors_two_hop  # two hop neighbors N2
-
-        #U1  Uf ->  Ud -> Uc
-            #Uf 
-        #diretto vicino
+        self.one_hop_neighbors = one_hop_neighbors  # one hop neighbors N1
+        self.two_hop_neighbors = two_hop_neighbors  # two hop neighbors N2
 
 
 # ------------------ Depot ----------------------
@@ -293,8 +289,8 @@ class Drone(Entity):
 
         # hello interval parameters
         self.link_holding_timer = 0
-        self.tau = 0.5
-        self.hello_interval = 1
+        self.tau: float = 0.5
+        self.hello_interval: float = 1
 
         # array distance from other drones
         self.dist_t1 = np.inf * np.ones(len(self.simulator.drones))
@@ -310,6 +306,8 @@ class Drone(Entity):
         # two hop neighbors
         self.two_hop_neighbors: list[Drone] = []
 
+        
+
         # setup drone routing algorithm
         self.routing_algorithm = self.simulator.routing_algorithm.value(self, self.simulator)
 
@@ -318,26 +316,26 @@ class Drone(Entity):
         # last mission coord to restore the mission after movement
         self.last_mission_coords = None
 
-    def calc_distances(self, neighbor_drones: list[HelloPacket]):
+    def calc_distances(self, neighbor_drones: list[Drone]):
         """
         Calculate the distances between the current drone and the neighbors
         """
         for neighbor in neighbor_drones:
             # calculate the distance between the current drone and the neighbor
-            self.dist_t2[neighbor.src_drone.identifier] = np.sqrt(
-                (self.coords[0] - neighbor.cur_pos[0]) ** 2 + (self.coords[1] - neighbor.cur_pos[1]) ** 2)
-            self.t2[neighbor.src_drone.identifier] = self.simulator.cur_step
+            self.dist_t2[neighbor.identifier] = np.sqrt(
+                (self.coords[0] - neighbor.coords[0]) ** 2 + (self.coords[1] - neighbor.coords[1]) ** 2)
+            self.t2[neighbor.identifier] = self.simulator.cur_step
 
-    def update_hello_interval(self, neighbor_drones: list[HelloPacket]):
+    def update_hello_interval(self, neighbors: list[Drone]):
         """
         Update the hello interval of the current drone
         """
         # calculate the distances between the current drone and the neighbors
-        self.calc_distances(neighbor_drones)
+        self.calc_distances(neighbors)
 
         # calculate the link duration
-        link_duration = np.zeros(len(neighbor_drones))
-        for i in range(len(neighbor_drones)):
+        link_duration = np.zeros(len(neighbors))
+        for i in range(len(neighbors)):
             delta = self.dist_t2[i] - self.dist_t1[i]
             if delta > 0:
                 link_duration[i] = np.abs(self.communication_range - self.dist_t2[i]) / \
