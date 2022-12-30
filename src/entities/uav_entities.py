@@ -8,7 +8,6 @@ if TYPE_CHECKING:
 from src.utilities import config, utilities
 
 
-
 class SimulatedEntity:
     """ A simulated entity keeps track of the simulation object, where you can access all the parameters
     of the simulation. No class of this type is directly instantiable.
@@ -200,19 +199,34 @@ class ACKPacket(Packet):
 class HelloPacket(Packet):
     """ The hello message is responsible to give info about neighborhood """
 
-    def __init__(self, src_drone: Drone, time_step_creation: int, simulator: Simulator, cur_pos, speed, next_target): #TODO: type
+    # TODO: type
+    def __init__(self, src_drone: Drone, time_step_creation: int, simulator: Simulator, cur_pos: tuple[float, float], speed, next_target: tuple[float, float], link_holding_timer=0, neighbors_one_hop=[], neighbors_two_hop = []):
         super().__init__(time_step_creation, simulator, None)
         self.cur_pos = cur_pos
         self.speed = speed
         self.next_target = next_target
-        self.src_drone = src_drone  # Don't use this
+        self.src_drone = src_drone  # don't use this
+
+        self.link_holding_timer = link_holding_timer
+        self.sequence_number = src_drone.sequence_number
+
+        # increment the sequence number of the drone
+        src_drone.sequence_number = src_drone.sequence_number + 1
+
+        # list of neighbors
+        self.cur_neighbors_one_hop = neighbors_one_hop  # one hop neighbors N1
+        self.cur_neighbors_two_hop = neighbors_two_hop  # two hop neighbors N2
+
+        #U1  Uf ->  Ud -> Uc
+            #Uf 
+        #diretto vicino
 
 
 # ------------------ Depot ----------------------
 class Depot(Entity):
     """ The depot is an Entity. """
 
-    def __init__(self, coords: tuple[float, float], communication_range, simulator: Simulator): #TODO: type
+    def __init__(self, coords: tuple[float, float], communication_range, simulator: Simulator):  # TODO: type
         super().__init__(id(self), coords, simulator)
         self.communication_range = communication_range
 
@@ -239,7 +253,7 @@ class Depot(Entity):
                                                      pck.event_ref.identifier,
                                                      delivery_delay,
                                                      feedback)
-            #print(f"DEPOT -> Drone {current_drone.identifier} packet: {pck.event_ref} total packets in sim: {len(self.simulator.metrics.drones_packets_to_depot)}")
+            # print(f"DEPOT -> Drone {current_drone.identifier} packet: {pck.event_ref} total packets in sim: {len(self.simulator.metrics.drones_packets_to_depot)}")
 
             # add metrics: all the packets notified to the depot
             self.simulator.metrics.drones_packets_to_depot.add((pck, cur_step))
@@ -273,6 +287,29 @@ class Drone(Entity):
         self.distance_from_depot = 0
         self.move_routing = False  # if true, it moves to the depot
 
+        # drone state
+        self.velocity = np.array([0, 0])
+        self.power = 1
+
+        # hello interval parameters
+        self.link_holding_timer = 0
+        self.tau = 0.5
+        self.hello_interval = 1
+
+        # array distance from other drones
+        self.dist_t1 = np.inf * np.ones(len(self.simulator.drones))
+        self.t1 = np.zeros(len(self.simulator.drones))
+        self.dist_t2 = np.inf * np.ones(len(self.simulator.drones))
+        self.t2 = np.zeros(len(self.simulator.drones))
+
+        # sequence number
+        self.sequence_number = 0
+
+        # one hop neighbors
+        self.one_hop_neighbors: list[Drone] = []
+        # two hop neighbors
+        self.two_hop_neighbors: list[Drone] = []
+
         # setup drone routing algorithm
         self.routing_algorithm = self.simulator.routing_algorithm.value(self, self.simulator)
 
@@ -280,6 +317,43 @@ class Drone(Entity):
 
         # last mission coord to restore the mission after movement
         self.last_mission_coords = None
+
+    def calc_distances(self, neighbor_drones: list[HelloPacket]):
+        """
+        Calculate the distances between the current drone and the neighbors
+        """
+        for neighbor in neighbor_drones:
+            # calculate the distance between the current drone and the neighbor
+            self.dist_t2[neighbor.src_drone.identifier] = np.sqrt(
+                (self.coords[0] - neighbor.cur_pos[0]) ** 2 + (self.coords[1] - neighbor.cur_pos[1]) ** 2)
+            self.t2[neighbor.src_drone.identifier] = self.simulator.cur_step
+
+    def update_hello_interval(self, neighbor_drones: list[HelloPacket]):
+        """
+        Update the hello interval of the current drone
+        """
+        # calculate the distances between the current drone and the neighbors
+        self.calc_distances(neighbor_drones)
+
+        # calculate the link duration
+        link_duration = np.zeros(len(neighbor_drones))
+        for i in range(len(neighbor_drones)):
+            delta = self.dist_t2[i] - self.dist_t1[i]
+            if delta > 0:
+                link_duration[i] = np.abs(self.communication_range - self.dist_t2[i]) / \
+                    (delta / (self.t2[i] - self.t1[i]))
+            else:
+                link_duration[i] = self.dist_t2[i] / self.velocity  # TODO: check this
+
+        # link holding timer
+        self.link_holding_timer = np.min(link_duration)
+
+        # update the hello interval
+        self.hello_interval = self.tau * self.link_holding_timer
+
+        # t1 = t2
+        self.t1 = self.t2.copy()
+        self.dist_t1 = self.dist_t2.copy()
 
     def update_packets(self, cur_step: int):
         """
@@ -428,7 +502,7 @@ class Drone(Entity):
         """ Returns the length of the buffer. """
         return len(self.__buffer)
 
-    def remove_packets(self, packets: list[DataPacket]):
+    def remove_packets(self, packets: list[Packet]):
         """ Removes the packets from the buffer. """
         for packet in packets:
             if packet in self.__buffer:
@@ -442,7 +516,7 @@ class Drone(Entity):
         if self.move_routing:
             return self.depot.coords
         elif self.come_back_to_mission:
-            return self.last_mission_coords # type: ignore #TODO: better typing(?)
+            return self.last_mission_coords  # type: ignore #TODO: better typing(?)
         else:
             if self.current_waypoint >= len(self.path) - 1:  # reached the end of the path, start back to 0
                 return self.path[0]
@@ -462,20 +536,21 @@ class Drone(Entity):
         else:
             p1 = self.path[self.current_waypoint + 1]
 
-        all_distance = utilities.euclidean_distance(p0, p1) # type: ignore  #TODO: better typing(?)
+        all_distance = utilities.euclidean_distance(p0, p1)  # type: ignore  #TODO: better typing(?)
         distance = time * self.speed
         if all_distance == 0 or distance == 0:
-            self.__update_position(p1) # type: ignore  #TODO: better typing(?)
+            self.__update_position(p1)  # type: ignore  #TODO: better typing(?)
             return
 
         t = distance / all_distance
         if t >= 1:
-            self.__update_position(p1) # type: ignore  #TODO: better typing(?)
+            self.__update_position(p1)  # type: ignore  #TODO: better typing(?)
         elif t <= 0:
             print("Error move drone, ratio < 0")
             exit(1)
         else:
-            self.coords = (((1 - t) * p0[0] + t * p1[0]), ((1 - t) * p0[1] + t * p1[1])) # type: ignore  #TODO: better typing(?)
+            # type: ignore  #TODO: better typing(?)
+            self.coords = (((1 - t) * p0[0] + t * p1[0]), ((1 - t) * p0[1] + t * p1[1]))
 
     def __update_position(self, p1: tuple[float, float]):
         """ Updates the position of the drone. """
@@ -532,7 +607,7 @@ class Environment(SimulatedEntity):
         self.height = height
 
         self.event_generator = EventGenerator(height, width, simulator)
-        self.active_events = [] #TODO: type
+        self.active_events = []  # TODO: type
 
     def add_drones(self, drones: list[Drone]):
         """ add a list of drones in the env """

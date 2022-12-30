@@ -5,7 +5,7 @@ DroNET is a Python based simulator for experimenting routing algorithms and mobi
 networks. 
 
 # Setup
-The project is developed using Python 3.7. To install the required packages, you can use the provided conda environment:
+The project is developed using Python 3.10. To install the required packages, you can use the provided conda environment:
 
 ```bash
 conda env create -f environment.yml

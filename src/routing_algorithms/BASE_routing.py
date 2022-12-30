@@ -1,14 +1,19 @@
-from src.entities.uav_entities import DataPacket, ACKPacket, HelloPacket, Packet
+from src.entities.uav_entities import DataPacket, ACKPacket, Drone, HelloPacket, Packet
+from typing import TYPE_CHECKING
+
 from src.utilities import utilities as util
 from src.utilities import config
 
 from scipy.stats import norm
 import abc
 
+if TYPE_CHECKING:
+    from src.simulation.simulator import Simulator
+
 
 class BASE_routing(metaclass=abc.ABCMeta):
 
-    def __init__(self, drone, simulator):
+    def __init__(self, drone: Drone, simulator: 'Simulator'):
         """ The drone that is doing routing and simulator object. """
 
         self.drone = drone
