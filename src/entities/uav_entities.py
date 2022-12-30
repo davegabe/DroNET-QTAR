@@ -314,6 +314,11 @@ class Drone(Entity):
         # last mission coord to restore the mission after movement
         self.last_mission_coords = None
 
+    def update_battery(self, time_step: int):
+        rand = np.random.uniform(0, self.simulator.drone_max_energy / self.simulator.len_simulation)
+        self.residual_energy = self.residual_energy - rand
+
+
     def calc_distances(self, neighbor_drones: list[Drone]):
         """
         Calculate the distances between the current drone and the neighbors
