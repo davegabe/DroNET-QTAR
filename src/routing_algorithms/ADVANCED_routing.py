@@ -27,7 +27,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
         self.no_transmission = False
 
     @abc.abstractmethod
-    def relay_selection(self, geo_neighbors, packet):
+    def relay_selection(self, packet):
         pass
 
     def routing_close(self):
@@ -128,7 +128,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
                         pass
                     else:
                         # TODO: lines 23-24 Algorithm 1
-                        if n not in self.drone.two_hop_neighbors:
+                        if n not in self.drone.two_hop_neighbors: # and n not in self.drone.one_hop_neighbors:
                             self.drone.two_hop_neighbors.append(n)
                 self.drone.update_hello_interval(self.drone.two_hop_neighbors)
 
@@ -143,7 +143,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
 
                 self.simulator.metrics.mean_numbers_of_possible_relays.append(len(opt_neighbors))
 
-                best_neighbor = self.relay_selection(opt_neighbors, pkd)  # compute score
+                best_neighbor = self.relay_selection(pkd)  # compute score
 
                 if best_neighbor is not None:
 

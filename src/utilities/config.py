@@ -1,6 +1,7 @@
 
 from src.routing_algorithms.georouting import GeoRouting
 from src.routing_algorithms.q_learning_routing import QLearningRouting
+from src.routing_algorithms.qtar_routing import QTARRouting
 from src.routing_algorithms.random_routing import RandomRouting
 from enum import Enum
 
@@ -85,6 +86,7 @@ class RoutingAlgorithm(Enum):
     GEO = GeoRouting
     RND = RandomRouting
     QL = QLearningRouting
+    QTAR = QTARRouting
 
     @staticmethod
     def keylist():
@@ -100,7 +102,7 @@ class ChannelError(Enum):
         return list(map(lambda c: c.name, ChannelError))
 
 
-ROUTING_ALGORITHM = RoutingAlgorithm.GEO
+ROUTING_ALGORITHM = RoutingAlgorithm.QTAR
 CHANNEL_ERROR_TYPE = ChannelError.GAUSSIAN
 
 COMMUNICATION_P_SUCCESS = 1   # float: probability to have success in a communication.

@@ -284,7 +284,7 @@ class Drone(Entity):
         self.move_routing = False  # if true, it moves to the depot
 
         # drone state
-        self.velocity = np.array([0, 0])
+        self.velocity = 1
         self.power = 1
 
         # hello interval parameters
@@ -293,10 +293,10 @@ class Drone(Entity):
         self.hello_interval: float = 1
 
         # array distance from other drones
-        self.dist_t1 = np.inf * np.ones(len(self.simulator.drones))
-        self.t1 = np.zeros(len(self.simulator.drones))
-        self.dist_t2 = np.inf * np.ones(len(self.simulator.drones))
-        self.t2 = np.zeros(len(self.simulator.drones))
+        self.dist_t1 = 2030 * np.ones(self.simulator.n_drones)
+        self.t1 = np.zeros(self.simulator.n_drones)
+        self.dist_t2 = 2030 * np.ones(self.simulator.n_drones)
+        self.t2 = np.zeros(self.simulator.n_drones)
 
         # sequence number
         self.sequence_number = 0
@@ -305,8 +305,6 @@ class Drone(Entity):
         self.one_hop_neighbors: list[Drone] = []
         # two hop neighbors
         self.two_hop_neighbors: list[Drone] = []
-
-        
 
         # setup drone routing algorithm
         self.routing_algorithm = self.simulator.routing_algorithm.value(self, self.simulator)
@@ -330,6 +328,9 @@ class Drone(Entity):
         """
         Update the hello interval of the current drone
         """
+        if len(neighbors) == 0:
+            return
+
         # calculate the distances between the current drone and the neighbors
         self.calc_distances(neighbors)
 
@@ -344,7 +345,7 @@ class Drone(Entity):
                 link_duration[i] = self.dist_t2[i] / self.velocity  # TODO: check this
 
         # link holding timer
-        self.link_holding_timer = np.min(link_duration)
+        self.link_holding_timer = np.nanmax(link_duration)
 
         # update the hello interval
         self.hello_interval = self.tau * self.link_holding_timer
