@@ -19,6 +19,8 @@ def plot_avg_results(data: list[str], data_type: str, algorithms: list[str]):
                     avg[key] = sum(file[key]) / len(file[key])
                 # Plot values
                 plt.plot(list(avg.keys()), list(avg.values()))
+                # Plot error bars
+                plt.errorbar(list(avg.keys()), list(avg.values()), yerr=0.1, fmt='o')
     # Set legend
     plt.legend(found_algorithms)
 
