@@ -19,6 +19,42 @@ if TYPE_CHECKING:
     from src.simulation.simulator import Simulator
     from src.entities.uav_entities import Drone
 
+def delay_between_drones(drone_src: Drone, drone_dest: Drone, simulator: Simulator) -> float:
+    """ compute the delay between two drones """
+    # distance between drones
+    dist = euclidean_distance(drone_src.coords, drone_dest.coords)
+    # delay between drones
+    return dist / simulator.drone_com_range ** 2
+
+def one_hop_speed(drone_src: Drone, drone_relay: Drone, simulator: Simulator) -> float:
+    """ compute the velocity of the drone source with respect to the drone relay """
+    # distance between drone source and drone relay
+    dist = euclidean_distance(drone_src.coords, simulator.depot.coords) - euclidean_distance(drone_relay.coords, simulator.depot.coords)
+    # delay between drone source and drone relay
+    delay = delay_between_drones(drone_src, drone_relay, simulator)
+    return dist / delay
+
+
+def two_hop_speed(drone_src: Drone, drone_one_hope_relay: Drone, drone_two_hope_relay: Drone, simulator: Simulator) -> float:
+    """ compute the velocity of the drone source with respect to the drone relay """
+    # distance between drone one hop relay and drone two hop relay
+    dist = euclidean_distance(drone_one_hope_relay.coords, simulator.depot.coords) - euclidean_distance(drone_two_hope_relay.coords, simulator.depot.coords)
+
+    # delay between drone source and one hop relay
+    delay_one_hop = delay_between_drones(drone_src, drone_one_hope_relay, simulator)
+    # delay between drone one hop relay and two hop relay
+    delay_two_hop = delay_between_drones(drone_one_hope_relay, drone_two_hope_relay, simulator)      #one hop delay perchè devo passare per il one hop
+
+    return dist / (delay_one_hop + delay_two_hop)
+
+
+def compute_required_speed(drone_i: Drone, remaining_ttl: int, simulator: Simulator) -> float:
+    """ compute the required velocity of the drone i such that it can reach the depot before the ttl expires """
+    # distance between drone i and drone d
+    dist = euclidean_distance(drone_i.coords, simulator.depot.coords)
+    return dist / remaining_ttl
+
+
 def compute_circle_path(radius: int, center: tuple[float, float]) -> list:
     """ compute a set of finite coordinates to simulate a circle trajectory of input radius around a given center
 
@@ -53,7 +89,7 @@ def pickle_data(data: str, filename: str):
         pickle.dump(data, out)
 
 
-def unpickle_data(filename: str): #TODO: type
+def unpickle_data(filename: str):  # TODO: type
     """ load the metrics from a file """
     with open(filename, 'rb') as handle:
         obj = pickle.load(handle)
@@ -116,7 +152,7 @@ class PathManager:
         self.path_from_json = path_from_json
         self.json_file = json_file.format(seed)
         self.rnd_paths = np.random.RandomState(seed)
-        self.path_dict = dict() #TODO: type
+        self.path_dict = dict()  # TODO: type
         if path_from_json:
             self.path_dict = json_to_paths(self.json_file)
 
@@ -141,7 +177,8 @@ class PathManager:
                                                        random_generator=self.rnd_paths,
                                                        range_decision=config.RANDOM_STEPS,
                                                        random_starting_point=config.RANDOM_START_POINT)
-    #TODO: type for stuff down this
+    # TODO: type for stuff down this
+
     def __cirlce_path(self, drone_id: int, simulator: Simulator, center=None, radius=None):
         if center is None:
             center = simulator.depot_coordinates
@@ -190,9 +227,10 @@ def json_to_paths(json_file_path):
             out_data[drone_index] = drone_path
     return out_data
 
+
 def clean_paths(json_file_path):
 
-    out_data = {"drones":[]}
+    out_data = {"drones": []}
     with open(json_file_path, 'r') as in_file:
         data = json.load(in_file)
         for drone_data in data["drones"]:
@@ -272,7 +310,7 @@ class PathToDepot():
         """
         # only channel mode
         if abs(drone_pos[
-                   0] - self.x_position) < 1:  # the drone is already on the channel with an error of 1 meter
+                0] - self.x_position) < 1:  # the drone is already on the channel with an error of 1 meter
             return self.simulator.depot_coordinates
         else:
             return self.x_position, drone_pos[1]  # the closest point to the channel

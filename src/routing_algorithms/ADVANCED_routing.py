@@ -27,7 +27,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
         self.no_transmission = False
 
     @abc.abstractmethod
-    def relay_selection(self, packet):
+    def relay_selection(self, packet: DataPacket, drone_near_depot_id: int = -1) -> Drone:
         pass
 
     def routing_close(self):
@@ -54,8 +54,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
                 self.current_n_transmission = 0
                 self.drone.move_routing = False
 
-
-                #qui usare la gestione degli ack
+                # qui usare la gestione degli ack
 
     def drone_identification(self, drones: list[Drone], cur_step: int):
         """ handle drone hello messages to identify neighbors """
@@ -65,7 +64,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
 
         my_hello = HelloPacket(self.drone, cur_step, self.simulator, self.drone.coords,
                                self.drone.speed, self.drone.next_target(),
-                               self.drone.link_holding_timer, # type: ignore
+                               self.drone.link_holding_timer,  # type: ignore
                                self.drone.one_hop_neighbors, self.drone.two_hop_neighbors)
 
         self.broadcast_message(my_hello, self.drone, drones, cur_step)
@@ -95,20 +94,25 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
             self.current_n_transmission = 0
             return
 
-
         if cur_step % self.simulator.drone_retransmission_delta == 0:
             #################################
             ## ONE-HOP DISCOVERY ##
             # create a list of all the Drones that are in self.drone neighbourhood using hello messages
             opt_neighbors = []
+            drone_near_depot_id = -1
             for hpk_id in self.hello_messages:
                 hpk: HelloPacket = self.hello_messages[hpk_id]
 
                 # check if packet is too old
                 if hpk.time_step_creation < cur_step - config.OLD_HELLO_PACKET:
                     continue
-                    
+
                 opt_neighbors.append((hpk, hpk.src_drone))
+
+                # We have to check if the depot is in the communication range
+                if util.euclidean_distance(self.simulator.depot.coords, hpk.src_drone.coords) <= self.simulator.depot_com_range:
+                    # we cannot transmit to the depot since we don't have the packet yet
+                    drone_near_depot_id = hpk.src_drone.identifier
 
             # update the list of one hop neighbors
             self.drone.one_hop_neighbors = [n[1] for n in opt_neighbors]
@@ -120,7 +124,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
             ## TWO-HOP DISCOVERY ##
             for hpk_id in self.hello_messages:
                 hpk: HelloPacket = self.hello_messages[hpk_id]
-                # two hop neighbors are the neighbors of the neighbors
+                # two hop neighbors are the neighbors of the neighbor hpk_id
                 two_hop_neighbors = hpk.one_hop_neighbors
                 for n in two_hop_neighbors:
                     if n.identifier == self.drone.identifier:
@@ -128,11 +132,15 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
                         pass
                     else:
                         # TODO: lines 23-24 Algorithm 1
-                        if n not in self.drone.two_hop_neighbors: # and n not in self.drone.one_hop_neighbors:
-                            self.drone.two_hop_neighbors.append(n)
-                self.drone.update_hello_interval(self.drone.two_hop_neighbors)
+                        self.drone.two_hop_neighbors[hpk_id] = n
 
-
+            # update hello interval
+            two_hop_unique_neighbors: list[Drone] = []
+            for drone_list in self.drone.two_hop_neighbors.values():
+                for drone in drone_list:
+                    if drone not in two_hop_unique_neighbors:
+                        two_hop_unique_neighbors.append(drone)
+            self.drone.update_hello_interval(two_hop_unique_neighbors)
 
             # if there are no neighbors, return
             if len(opt_neighbors) == 0:
@@ -143,7 +151,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
 
                 self.simulator.metrics.mean_numbers_of_possible_relays.append(len(opt_neighbors))
 
-                best_neighbor = self.relay_selection(pkd)  # compute score
+                best_neighbor = self.relay_selection(pkd, drone_near_depot_id)  # compute score
 
                 if best_neighbor is not None:
 

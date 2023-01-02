@@ -199,8 +199,7 @@ class ACKPacket(Packet):
 class HelloPacket(Packet):
     """ The hello message is responsible to give info about neighborhood """
 
-    # TODO: type
-    def __init__(self, src_drone: Drone, time_step_creation: int, simulator: Simulator, cur_pos: tuple[float, float], speed, next_target: tuple[float, float], link_holding_timer: float = 0, one_hop_neighbors=[], two_hop_neighbors=[]):
+    def __init__(self, src_drone: Drone, time_step_creation: int, simulator: Simulator, cur_pos: tuple[float, float], speed, next_target: tuple[float, float], link_holding_timer: float = 0, one_hop_neighbors=[], two_hop_neighbors=dict()):
         super().__init__(time_step_creation, simulator, None)
         self.cur_pos = cur_pos
         self.speed = speed
@@ -260,13 +259,13 @@ class Depot(Entity):
 # ------------------ Drone ----------------------
 class Drone(Entity):
 
-    def __init__(self, identifier: int, path: list[tuple[float, float]], depot: Depot, simulator: Simulator):
+    def __init__(self, identifier: int, path: list[tuple[float, float]], depot: Depot, simulator: Simulator, speed: float = 1):
 
         super().__init__(identifier, path[0], simulator)
 
         self.depot = depot
         self.path = path
-        self.speed = self.simulator.drone_speed
+        self.speed = speed
         self.sensing_range = self.simulator.drone_sen_range
         self.communication_range = self.simulator.drone_com_range
         self.buffer_max_size = self.simulator.drone_max_buffer_size
@@ -284,7 +283,6 @@ class Drone(Entity):
         self.move_routing = False  # if true, it moves to the depot
 
         # drone state
-        self.velocity = 1
         self.power = 1
 
         # hello interval parameters
@@ -303,8 +301,8 @@ class Drone(Entity):
 
         # one hop neighbors
         self.one_hop_neighbors: list[Drone] = []
-        # two hop neighbors
-        self.two_hop_neighbors: list[Drone] = []
+        # two hop neighbors is a dict {drone.identifier: [list of neighbors]}
+        self.two_hop_neighbors: dict[int, list[Drone]] = {}
 
         # setup drone routing algorithm
         self.routing_algorithm = self.simulator.routing_algorithm.value(self, self.simulator)
@@ -347,13 +345,13 @@ class Drone(Entity):
                 link_duration[i] = np.abs(self.communication_range - self.dist_t2[i]) / \
                     (delta / (self.t2[i] - self.t1[i]))
             else:
-                link_duration[i] = self.dist_t2[i] / self.velocity  # TODO: check this
+                link_duration[i] = self.dist_t2[i] / self.speed  # TODO: check this
 
         # link holding timer
         self.link_holding_timer = np.nanmax(link_duration)
 
         # update the hello interval
-        self.hello_interval = self.tau * self.link_holding_timer
+        self.hello_interval = self.tau * self.link_holding_timer # type: ignore #TODO: better typing(?)
 
         # t1 = t2
         self.t1 = self.t2.copy()
@@ -450,7 +448,7 @@ class Drone(Entity):
             if not self.is_known_packet(packet):
                 self.__buffer.append(packet)
 
-    def routing(self, drones: Drone, depot: Depot, cur_step: int):
+    def routing(self, drones: list[Drone], depot: Depot, cur_step: int):
         """ do the routing """
         self.distance_from_depot = utilities.euclidean_distance(self.depot.coords, self.coords)
         self.routing_algorithm.routing(depot, drones, cur_step)
@@ -553,8 +551,7 @@ class Drone(Entity):
             print("Error move drone, ratio < 0")
             exit(1)
         else:
-            # type: ignore  #TODO: better typing(?)
-            self.coords = (((1 - t) * p0[0] + t * p1[0]), ((1 - t) * p0[1] + t * p1[1]))
+            self.coords = (((1 - t) * p0[0] + t * p1[0]), ((1 - t) * p0[1] + t * p1[1])) # type: ignore  #TODO: better typing(?)
 
     def __update_position(self, p1: tuple[float, float]):
         """ Updates the position of the drone. """

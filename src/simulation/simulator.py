@@ -44,7 +44,7 @@ class Simulator:
                  communication_error_type=config.CHANNEL_ERROR_TYPE,
                  prob_size_cell_r=config.CELL_PROB_SIZE_R,
                  simulation_name=""):
-        self.cur_step = None
+        self.cur_step = 0
         self.drone_com_range = drone_com_range
         self.drone_sen_range = drone_sen_range
         self.drone_speed = drone_speed
@@ -69,10 +69,12 @@ class Simulator:
         self.routing_algorithm = routing_algorithm
         self.communication_error_type = communication_error_type
 
+        np.random.seed(self.seed)
+
         # --------------- cell for drones -------------
         self.prob_size_cell_r = prob_size_cell_r
         self.prob_size_cell = int(self.drone_com_range * self.prob_size_cell_r)
-        self.cell_prob_map = defaultdict(lambda: [0, 0, 0])
+        self.cell_prob_map = defaultdict(lambda: [0.0, 0.0, 0.0])
 
         self.sim_save_file = config.SAVE_PLOT_DIR + self.__sim_name()
         self.path_to_depot = None
@@ -121,9 +123,9 @@ class Simulator:
         self.drones: list[Drone] = []
 
         # drone 0 is the first
+        speeds = np.random.uniform(0.5, 1.5, self.n_drones) * self.drone_speed
         for i in range(self.n_drones):
-            self.drones.append(Drone(i, self.path_manager.path(i, self), self.depot, self))
-
+            self.drones.append(Drone(i, self.path_manager.path(i, self), self.depot, self, speeds[i]))
         self.environment.add_drones(self.drones)
         self.environment.add_depot(self.depot)
 
@@ -197,7 +199,7 @@ class Simulator:
         Simulator main function
         @return: None
         """
-
+        cur_step = 0
         for cur_step in tqdm(range(self.len_simulation)):
             
             self.cur_step = cur_step
