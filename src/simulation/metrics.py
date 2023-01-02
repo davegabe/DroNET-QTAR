@@ -23,6 +23,7 @@ class Metrics:
 
         # The mean number of possible relays when i want to communicate
         self.mean_numbers_of_possible_relays = []
+        self.event_mean_delivery_time: float = 0
 
         # all packets in the simulation
         self.all_control_packets_in_simulation = 0

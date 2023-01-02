@@ -351,7 +351,7 @@ class Drone(Entity):
         self.link_holding_timer = np.nanmax(link_duration) # type: ignore #TODO: better typing(?)
 
         # update the hello interval
-        self.hello_interval = int(self.tau * self.link_holding_timer)
+        self.hello_interval = np.ceil(self.tau * self.link_holding_timer) # ceil to avoid 0
 
         # t1 = t2
         self.t1 = self.t2.copy()
