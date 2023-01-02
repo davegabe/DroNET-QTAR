@@ -10,11 +10,13 @@ class QTARRouting(ADVANCED_Routing):
         ADVANCED_Routing.__init__(self, drone=drone, simulator=simulator)
         self.taken_actions = {}  # id event : (old_state, old_action)
         self.q_table = np.zeros(self.simulator.n_drones)
-        self.A = 0.7  # importanza alla reward sul delay
-        self.B = 0.2  # importanza alla reward sulla velocità
-        self.C = 0.1  # importanza alla batteria
+        self.A = 0.7  # delay importance
+        self.B = 0.2  # speed importance
+        self.C = 0.1  # energy importance
+        self.rmin = -np.inf  # minimum reward
+        self.rmax = -np.inf  # maximum reward
 
-    def feedback(self, drone: Drone, id_event, delay, outcome):
+    def feedback(self, drone: Drone, id_event, delay, outcome: int = 0, is_destination: bool = False, is_local_minimum: bool = False):
         """
         Feedback returned when the packet arrives at the depot or
         Expire. This function have to be implemented in RL-based protocols ONLY
@@ -26,7 +28,6 @@ class QTARRouting(ADVANCED_Routing):
         """
         # Be aware, due to network errors we can give the same event to multiple drones and receive multiple
         # feedback for the same packet!!
-
         if id_event in self.taken_actions:
             state, action = self.taken_actions[id_event]
 
@@ -34,9 +35,28 @@ class QTARRouting(ADVANCED_Routing):
             del self.taken_actions[id_event]
 
             # reward or update using the old state and the selected action at that time
-            delay, speed, energy = state
+            delay, speed, energy, norm_delay = state
 
-            self.q_table[action] = self.A * delay + self.B * speed + self.C * energy
+            # learning rate
+            lr = 1 - np.exp(-norm_delay) if norm_delay != -np.inf else 0.3
+            
+            # discount factor
+            intersection_len = len(set(self.drone.one_hop_neighbors).intersection(set(self.drone.prev_one_hop_neighbors)))
+            union_len = len(set(self.drone.one_hop_neighbors).union(set(self.drone.prev_one_hop_neighbors)))
+            gamma = np.sqrt(intersection_len / union_len) if union_len != 0 else 0
+            # reward
+            reward = self.A * delay + self.B * speed + self.C * energy
+            # set rmin and rmax
+            self.rmin = min(self.rmin, reward) if self.rmin != -np.inf else reward
+            self.rmax = max(self.rmax, reward) if self.rmax != -np.inf else reward
+            # special cases for reward
+            if is_destination:
+                reward = self.rmax
+            elif is_local_minimum:
+                reward = self.rmin
+            
+            # update the q table
+            self.q_table[action] = self.q_table[action] + lr * (reward + gamma * np.max(self.q_table) - self.q_table[action])
 
     def relay_selection(self, packet: DataPacket, drone_near_depot_id: int = -1) -> Drone:
         """
@@ -45,7 +65,7 @@ class QTARRouting(ADVANCED_Routing):
         @param opt_neighbors: a list of tuple (hello_packet, source_drone)
         @return: The best drone to use as relay
         """
-        state: tuple[float, float, float] = (0,0,0)  # delay, speed, energy
+        state: tuple[float, float, float, float] = (0,0,0,0)  # delay, speed, energy, norm_delay
         action: int = self.drone.identifier  # action is the drone id
 
         # potential good neighbors, ignore the ones that are too slow to reach the depot in time
@@ -84,16 +104,22 @@ class QTARRouting(ADVANCED_Routing):
                 # relay drone to reach the action drone
                 one_hop_neighbor = selected_drones[neighborsId.index(action)][0]
                 
+                # compute the normalized delay
+                norm_delay = [util.delay_between_drones(self.drone, one_hop_neighbor, self.simulator), util.delay_between_drones(one_hop_neighbor, action_drone, self.simulator)]
+                norm_delay = np.abs(sum(norm_delay) - np.mean(norm_delay)) / np.var(norm_delay) if np.var(norm_delay) != 0 else -np.inf
+                
                 # compute the state
                 delay = util.delay_between_drones(self.drone, action_drone, self.simulator)
                 speed = util.two_hop_speed(self.drone, one_hop_neighbor, action_drone, self.simulator) / selected_sum_speed
                 energy = action_drone.residual_energy / self.simulator.drone_max_energy / selected_sum_energy
-                state = (delay, speed, energy)
+                state = (delay, speed, energy, norm_delay)
                 break
 
         # Store your current action --- you can add some stuff if needed to take a reward later
         self.taken_actions[packet.event_ref.identifier] = (state, action)
 
-        self.feedback(self.drone, packet.event_ref.identifier, 0, 1)
+        is_destination = drone_near_depot_id != -1
+        is_local_minimum = action == self.drone.identifier # and len(selected_drones) != 0
+        self.feedback(self.drone, packet.event_ref.identifier, 0, 0, is_destination, is_local_minimum)
 
         return self.simulator.drones[action]

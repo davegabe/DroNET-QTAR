@@ -115,6 +115,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
                     drone_near_depot_id = hpk.src_drone.identifier
 
             # update the list of one hop neighbors
+            self.drone.prev_one_hop_neighbors = self.drone.one_hop_neighbors
             self.drone.one_hop_neighbors = [n[1] for n in opt_neighbors]
 
             # update hello interval
@@ -128,11 +129,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
                 # two hop neighbors are the neighbors of the neighbor hpk_id
                 two_hop_neighbors = hpk.one_hop_neighbors
                 for n in two_hop_neighbors:
-                    if n.identifier == self.drone.identifier:
-                        # TODO: lines 20-21 Algorithm 1
-                        pass
-                    else:
-                        # TODO: lines 23-24 Algorithm 1
+                    if n.identifier != self.drone.identifier:
                         if hpk_id not in self.drone.two_hop_neighbors:
                             self.drone.two_hop_neighbors[hpk_id] = [n]
                         else:

@@ -30,7 +30,7 @@ def delay_between_drones(drone_src: Entity, drone_dest: Entity, simulator: Simul
     # distance between drones
     dist = euclidean_distance(drone_src.coords, drone_dest.coords)
     # delay between drones
-    return dist / simulator.drone_com_range ** 2
+    return dist / simulator.drone_com_range
 
 def one_hop_speed(drone_src: Entity, drone_relay: Entity, simulator: Simulator) -> float:
     """ compute the velocity of the drone source with respect to the drone relay """
@@ -394,8 +394,8 @@ class TraversedCells:
         if end2 == end1:
             return True
 
-        a = np.asarray(end1) - np.asarray(start1)  # direction of line a
-        b = np.asarray(start2) - np.asarray(end2)  # direction of line b, reversed
+        a = np.asarray(end1) - np.asarray(start1)   # direction of line a    
+        b = np.asarray(start2) - np.asarray(end2)   # direction of line b, reversed
         d = np.asarray(start2) - np.asarray(start1)  # right-hand side
         det = a[0] * b[1] - a[1] * b[0]
 

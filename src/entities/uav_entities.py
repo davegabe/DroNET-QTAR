@@ -301,6 +301,7 @@ class Drone(Entity):
 
         # one hop neighbors
         self.one_hop_neighbors: list[Drone] = []
+        self.prev_one_hop_neighbors: list[Drone] = []
         # two hop neighbors is a dict {drone.identifier: [list of neighbors]}
         self.two_hop_neighbors: dict[int, list[Drone]] = {}
 
@@ -345,10 +346,10 @@ class Drone(Entity):
                 link_duration[i] = np.abs(self.communication_range - self.dist_t2[i]) / \
                     (delta / (self.t2[i] - self.t1[i]))
             else:
-                link_duration[i] = self.dist_t2[i] / self.speed  # TODO: check this
+                link_duration[i] = self.dist_t2[i] / self.speed
 
         # link holding timer
-        self.link_holding_timer = np.nanmax(link_duration) # type: ignore #TODO: better typing(?)
+        self.link_holding_timer = np.nanmax(link_duration) # type: ignore # TODO: better typing(?)
 
         # update the hello interval
         self.hello_interval = np.ceil(self.tau * self.link_holding_timer) # ceil to avoid 0
@@ -518,7 +519,7 @@ class Drone(Entity):
         if self.move_routing:
             return self.depot.coords
         elif self.come_back_to_mission:
-            return self.last_mission_coords  # type: ignore #TODO: better typing(?)
+            return self.last_mission_coords  # type: ignore # TODO: better typing(?)
         else:
             if self.current_waypoint >= len(self.path) - 1:  # reached the end of the path, start back to 0
                 return self.path[0]
@@ -538,20 +539,20 @@ class Drone(Entity):
         else:
             p1 = self.path[self.current_waypoint + 1]
 
-        all_distance = utilities.euclidean_distance(p0, p1)  # type: ignore  #TODO: better typing(?)
+        all_distance = utilities.euclidean_distance(p0, p1)  # type: ignore  # TODO: better typing(?)
         distance = time * self.speed
         if all_distance == 0 or distance == 0:
-            self.__update_position(p1)  # type: ignore  #TODO: better typing(?)
+            self.__update_position(p1)  # type: ignore  # TODO: better typing(?)
             return
 
         t = distance / all_distance
         if t >= 1:
-            self.__update_position(p1)  # type: ignore  #TODO: better typing(?)
+            self.__update_position(p1)  # type: ignore  # TODO: better typing(?)
         elif t <= 0:
             print("Error move drone, ratio < 0")
             exit(1)
         else:
-            self.coords = (((1 - t) * p0[0] + t * p1[0]), ((1 - t) * p0[1] + t * p1[1])) # type: ignore  #TODO: better typing(?)
+            self.coords = (((1 - t) * p0[0] + t * p1[0]), ((1 - t) * p0[1] + t * p1[1])) # type: ignore  # TODO: better typing(?)
 
     def __update_position(self, p1: tuple[float, float]):
         """ Updates the position of the drone. """
