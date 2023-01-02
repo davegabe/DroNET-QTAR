@@ -64,7 +64,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
 
         my_hello = HelloPacket(self.drone, cur_step, self.simulator, self.drone.coords,
                                self.drone.speed, self.drone.next_target(),
-                               self.drone.link_holding_timer,  # type: ignore
+                               self.drone.link_holding_timer,
                                self.drone.one_hop_neighbors, self.drone.two_hop_neighbors)
 
         self.broadcast_message(my_hello, self.drone, drones, cur_step)
@@ -122,6 +122,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
 
             #################################
             ## TWO-HOP DISCOVERY ##
+            self.drone.two_hop_neighbors = dict()
             for hpk_id in self.hello_messages:
                 hpk: HelloPacket = self.hello_messages[hpk_id]
                 # two hop neighbors are the neighbors of the neighbor hpk_id
@@ -132,7 +133,10 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
                         pass
                     else:
                         # TODO: lines 23-24 Algorithm 1
-                        self.drone.two_hop_neighbors[hpk_id] = n
+                        if hpk_id not in self.drone.two_hop_neighbors:
+                            self.drone.two_hop_neighbors[hpk_id] = [n]
+                        else:
+                            self.drone.two_hop_neighbors[hpk_id].append(n)
 
             # update hello interval
             two_hop_unique_neighbors: list[Drone] = []

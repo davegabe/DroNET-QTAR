@@ -46,7 +46,7 @@ class QTARRouting(ADVANCED_Routing):
         @return: The best drone to use as relay
         """
         state: tuple[float, float, float] = (0,0,0)  # delay, speed, energy
-        action: int = -1  # action is the drone id
+        action: int = self.drone.identifier  # action is the drone id
 
         # potential good neighbors, ignore the ones that are too slow to reach the depot in time
         selected_drones: list[tuple[Drone, Drone]] = [] # (one_hop_neighbor, two_hop_neighbor)
@@ -59,7 +59,7 @@ class QTARRouting(ADVANCED_Routing):
             for two_hop_neighbor in two_hop_neighbors:
                 speed = util.two_hop_speed(self.drone, one_hop_neighbor, two_hop_neighbor, self.simulator)
                 remaining_ttl = self.simulator.packets_max_ttl - (self.simulator.cur_step - packet.time_step_creation)
-                required_speed = util.compute_required_speed(two_hop_neighbor, remaining_ttl , self.simulator)
+                required_speed = util.compute_required_speed(two_hop_neighbor, remaining_ttl, self.simulator)
                 if speed > required_speed:
                     selected_drones.append((one_hop_neighbor, two_hop_neighbor))
                     selected_sum_speed += speed
@@ -93,5 +93,7 @@ class QTARRouting(ADVANCED_Routing):
 
         # Store your current action --- you can add some stuff if needed to take a reward later
         self.taken_actions[packet.event_ref.identifier] = (state, action)
+
+        self.feedback(self.drone, packet.event_ref.identifier, 0, 1)
 
         return self.simulator.drones[action]

@@ -58,6 +58,7 @@ def compute_required_speed(drone_i: Entity, remaining_ttl: int, simulator: Simul
     """ compute the required velocity of the drone i such that it can reach the depot before the ttl expires """
     # distance between drone i and drone d
     dist = euclidean_distance(drone_i.coords, simulator.depot.coords)
+    remaining_ttl = 1 if remaining_ttl == 0 else remaining_ttl
     return dist / remaining_ttl
 
 

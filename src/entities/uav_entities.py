@@ -286,7 +286,7 @@ class Drone(Entity):
         self.power = 1
 
         # hello interval parameters
-        self.link_holding_timer = 0
+        self.link_holding_timer: float = 0
         self.tau: float = 0.5
         self.hello_interval: float = 1
 
@@ -348,10 +348,10 @@ class Drone(Entity):
                 link_duration[i] = self.dist_t2[i] / self.speed  # TODO: check this
 
         # link holding timer
-        self.link_holding_timer = np.nanmax(link_duration)
+        self.link_holding_timer = np.nanmax(link_duration) # type: ignore #TODO: better typing(?)
 
         # update the hello interval
-        self.hello_interval = self.tau * self.link_holding_timer # type: ignore #TODO: better typing(?)
+        self.hello_interval = int(self.tau * self.link_holding_timer)
 
         # t1 = t2
         self.t1 = self.t2.copy()
