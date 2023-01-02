@@ -1,4 +1,10 @@
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.entities.uav_entities import Entity
+
 """ To clean. """
 
 from src.utilities import config
@@ -19,14 +25,14 @@ if TYPE_CHECKING:
     from src.simulation.simulator import Simulator
     from src.entities.uav_entities import Drone
 
-def delay_between_drones(drone_src: Drone, drone_dest: Drone, simulator: Simulator) -> float:
+def delay_between_drones(drone_src: Entity, drone_dest: Entity, simulator: Simulator) -> float:
     """ compute the delay between two drones """
     # distance between drones
     dist = euclidean_distance(drone_src.coords, drone_dest.coords)
     # delay between drones
     return dist / simulator.drone_com_range ** 2
 
-def one_hop_speed(drone_src: Drone, drone_relay: Drone, simulator: Simulator) -> float:
+def one_hop_speed(drone_src: Entity, drone_relay: Entity, simulator: Simulator) -> float:
     """ compute the velocity of the drone source with respect to the drone relay """
     # distance between drone source and drone relay
     dist = euclidean_distance(drone_src.coords, simulator.depot.coords) - euclidean_distance(drone_relay.coords, simulator.depot.coords)
@@ -35,7 +41,7 @@ def one_hop_speed(drone_src: Drone, drone_relay: Drone, simulator: Simulator) ->
     return dist / delay
 
 
-def two_hop_speed(drone_src: Drone, drone_one_hope_relay: Drone, drone_two_hope_relay: Drone, simulator: Simulator) -> float:
+def two_hop_speed(drone_src: Entity, drone_one_hope_relay: Entity, drone_two_hope_relay: Entity, simulator: Simulator) -> float:
     """ compute the velocity of the drone source with respect to the drone relay """
     # distance between drone one hop relay and drone two hop relay
     dist = euclidean_distance(drone_one_hope_relay.coords, simulator.depot.coords) - euclidean_distance(drone_two_hope_relay.coords, simulator.depot.coords)
@@ -48,7 +54,7 @@ def two_hop_speed(drone_src: Drone, drone_one_hope_relay: Drone, drone_two_hope_
     return dist / (delay_one_hop + delay_two_hop)
 
 
-def compute_required_speed(drone_i: Drone, remaining_ttl: int, simulator: Simulator) -> float:
+def compute_required_speed(drone_i: Entity, remaining_ttl: int, simulator: Simulator) -> float:
     """ compute the required velocity of the drone i such that it can reach the depot before the ttl expires """
     # distance between drone i and drone d
     dist = euclidean_distance(drone_i.coords, simulator.depot.coords)
