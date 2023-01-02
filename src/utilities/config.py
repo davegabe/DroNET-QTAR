@@ -58,7 +58,7 @@ SIM_DURATION = 18000   # int: steps of simulation. # ***
 TS_DURATION = 0.150   # float: seconds duration of a step in seconds.
 SEED = 10  # int: seed of this simulation.
 
-N_DRONES = 5    # int: number of drones. # ***
+N_DRONES = 15    # int: number of drones. # ***
 ENV_WIDTH = 1500      # float: meters, width of environment.
 ENV_HEIGHT = 1500     # float: meters, height of environment.
 
@@ -70,7 +70,7 @@ P_FEEL_EVENT = .8       # float: probability that the drones feels the event gen
 """ e.g. given D_FEEL_EVENT = 500, P_FEEL_EVENT = .5, every 500 steps with probability .5 the drone will feel an event."""
 
 # drones
-COMMUNICATION_RANGE_DRONE = 150  # float: meters, communication range of the drones.
+COMMUNICATION_RANGE_DRONE = 250  # float: meters, communication range of the drones.
 SENSING_RANGE_DRONE = 0        # float: meters, the sensing range of the drones.
 DRONE_SPEED = 8                  # float: m/s, drone speed.
 DRONE_MAX_BUFFER_SIZE = 10000     # int: max number of packets in the buffer of a drone.

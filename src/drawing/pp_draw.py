@@ -180,6 +180,9 @@ class PathPlanningDrawer():
         # draw the residual energy
         stddraw.text(drone.coords[0], drone.coords[1] - 40, f"res: {drone.residual_energy:.2f}")
 
+        # draw the current speed
+        stddraw.text(drone.coords[0], drone.coords[1] - 80, f"spd: {drone.speed:.2f}")
+
     def draw_simulation_info(self, cur_step, max_steps):
         TEXT_LEFT = 60
         TEXT_TOP = 20
