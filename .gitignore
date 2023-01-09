@@ -6,5 +6,10 @@ data/evaluation_tests/*
 .idea
 .DS_Store
 *.pyc
-
+report/*.log
+report/*.aux
+report/*.fdb_latexmk
+report/*.fls
+report/*.out
+report/*.synctex.gz
 

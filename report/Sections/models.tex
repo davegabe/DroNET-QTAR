@@ -1,0 +1,24 @@
+\section{Models}
+
+\subsection{Q-Learning and UAVs}
+Q-learning can be used to design intelligent control policies for unmanned aerial vehicles (UAVs), also known as drones.
+For example, a Q-learning algorithm could be used to teach a drone to navigate through an unknown environment and avoid obstacles.
+In this case, we traing the model to let the agents learn what are the best drones to relay the packets to based on their two-hop neighbors.
+
+The one-hop neighbors are the drones that are within the communication range of the current drone, and the two-hop neighbors are the
+drones that are within the communication range of the one-hop neighbors. This allows the drones to make decisions based on the information
+they have about their neighbors, and the information they have about their neighbors' neighbors thus making the decisions more informed.
+That's because maybe the best drone to relay to is near the first hop neighbor.
+
+\subsection{QTAR}
+The algorithm proposed in the paper ``A Q-Learning-Based Topology-Aware Routing Protocol for Flying Ad Hoc Networks'' by Arafat and Moh is called QTAR.
+QTAR not only utilizes the information of single-hop neighbors
+but also uses the information of two-hop neighbors.
+The authors believe that this method improves the path discovery process,
+reduces the time required for calculating routes and improves the selection of the next-hop node.
+Although this technique increases routing overhead and system complexity.
+QTAR considers information such as delay, speed, and energy when selecting next-hop node. Moreover, QTAR provides a technique for calculating 
+the link lifetime to estimate the Hello interval and the link holding time. The link holding time is 
+In this protocol, Q-Learning factors such as learning rate and reward factor are 
+adaptively determined with regard to network conditions.
+For simplicity, this implementation uses a 2D environment instead of a 3D environment as proposed in the paper.

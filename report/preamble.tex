@@ -1,0 +1,31 @@
+\usepackage[top=4cm, bottom=3cm, outer=3cm, inner=3cm, heightrounded, marginparwidth=3.5cm, marginparsep=0.5cm, headheight=2cm]{geometry}
+%\usepackage[a4paper]{geometry}
+
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+
+\usepackage[export]{adjustbox}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[R]{%
+  {%
+    \hspace{-2cm}
+    \includegraphics[width=5cm]{Figures/logoSapienza.png} 
+     \hfill 
+    \parbox[b]{5cm}{\centering }
+   %
+  }{}%
+}
+\fancypagestyle{plain}{} 
+
+
+
+%\fancyfoot[L]{From: K. Smith}
+%\fancyfoot[C]{To: Jean A. Cory}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\linespread{1.25}
