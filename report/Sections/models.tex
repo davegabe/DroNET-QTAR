@@ -17,8 +17,38 @@ but also uses the information of two-hop neighbors.
 The authors believe that this method improves the path discovery process,
 reduces the time required for calculating routes and improves the selection of the next-hop node.
 Although this technique increases routing overhead and system complexity.
-QTAR considers information such as delay, speed, and energy when selecting next-hop node. Moreover, QTAR provides a technique for calculating 
-the link lifetime to estimate the Hello interval and the link holding time. The link holding time is 
-In this protocol, Q-Learning factors such as learning rate and reward factor are 
+QTAR considers information such as delay, speed, and energy when selecting next-hop node. Moreover, QTAR provides a technique for calculating
+the link lifetime to estimate the Hello interval and the link holding time. The link holding time is
+In this protocol, Q-Learning factors such as learning rate and reward factor are
 adaptively determined with regard to network conditions.
 For simplicity, this implementation uses a 2D environment instead of a 3D environment as proposed in the paper.
+The algoritgm can be divided into two modules: a module that constructs the topology and a module that selects the best relay and makes decisions based on the qTable.
+
+\subsubsection{Topology construction}
+
+For a drone to let everyone in the area to know its existance, it need to broadcast hello messages.
+A drone will also listen for hello messages.
+Here we have two phases: one hop neighbor discovery and two hop neighbor discovery.
+At the end of each phase, we update the hello message interval.
+The hello message interval should be lesser than the link holding timer of the minimum link
+duration timer.
+
+\paragraph{One hop neighbor discovery}
+For every hello message received, record the presence of originator and
+calulate the link holding timer and the link duration.
+
+\paragraph{Two hop neighbor discovery}
+Each neighbor in his hello message will also include the list of its one-hop neighbors.
+For every neighbor included in each hello messages, update the two hop metrics such as the
+link duration and the link holding timer taking into account the one hop neighbor.
+
+
+\subsubsection{Routing decisions}
+To decide the next hop, we will only consider the two-hop neighbors of the drone. % riga 18 di algo2
+We will choose the best two-hop neighbor and select as next hop the drone in between
+the current drone and the best two-hop neighbor.
+
+If we have the destination in the list of two-hop neighbors, we will choose it as next hop.
+Otherwise, we will choose the drone that has the highest Q-value.
+We will then update the Q-value of the drone that has been chosen as next hop.
+If there was no optimal drone to relay to, we will choose to keep the packet in the drone.
