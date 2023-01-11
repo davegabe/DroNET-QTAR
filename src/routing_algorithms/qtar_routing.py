@@ -11,8 +11,8 @@ class QTARRouting(ADVANCED_Routing):
         self.taken_actions = {}  # id event : (old_state, old_action)
         self.q_table = np.zeros(self.simulator.n_drones)
         self.A = 0.1  # delay importance
-        self.B = 0.5  # speed importance
-        self.C = 0.4  # energy importance
+        self.B = 0.6  # speed importance
+        self.C = 0.3  # energy importance
         self.rmin = -np.inf  # minimum reward
         self.rmax = -np.inf  # maximum reward
 

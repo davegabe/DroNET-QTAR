@@ -20,7 +20,8 @@ def plot_avg_results(data: list[str], data_type: str, algorithms: list[str]):
                 # Plot values
                 plt.plot(list(avg.keys()), list(avg.values()))
                 # Plot error bars
-                plt.errorbar(list(avg.keys()), list(avg.values()), yerr=0.1, fmt='o')
+                # fmt small dots
+                plt.errorbar(list(avg.keys()), list(avg.values()), yerr=0.1, capsize=2, fmt='.')
     # Set legend
     plt.legend(found_algorithms)
 
