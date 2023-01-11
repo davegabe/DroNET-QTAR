@@ -3,25 +3,30 @@ import matplotlib.pyplot as plt
 import os
 import time
 
+import numpy as np
+
 def plot_avg_results(data: list[str], data_type: str, algorithms: list[str]):
     """Make a plot for a specific type of result (e.g. average_delivery_ratio, average_delivery_time, etc.) with all algorithms"""
-    avg = {}
     found_algorithms = []
     for alg in algorithms:
         for file in data:
             if alg in file:
+                avg = {}
+                std = {}
                 found_algorithms.append(alg)
                 with open(f"./results/{file}") as f:
                     file = json.load(f)
                 # Each key is number of drones
                 # Each value is a list of simulation results
                 for key in file.keys():
+                    # Compute average for each key
                     avg[key] = sum(file[key]) / len(file[key])
-                # Plot values
+                    # Compute standard deviation for each key
+                    std[key] = np.std(file[key])
+                # Plot average values for each number of drones
                 plt.plot(list(avg.keys()), list(avg.values()))
-                # Plot error bars
-                # fmt small dots
-                plt.errorbar(list(avg.keys()), list(avg.values()), yerr=0.1, capsize=2, fmt='.')
+                # Plot error bars for each number of drones
+                plt.errorbar(list(avg.keys()), list(avg.values()), yerr=list(std.values()), capsize=2, fmt='.')
     # Set legend
     plt.legend(found_algorithms)
 
