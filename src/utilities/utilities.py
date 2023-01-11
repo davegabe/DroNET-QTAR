@@ -33,7 +33,7 @@ def delay_between_drones(drone_src: Entity, drone_dest: Entity, simulator: Simul
     return dist / simulator.drone_com_range
 
 def one_hop_speed(drone_src: Entity, drone_relay: Entity, simulator: Simulator) -> float:
-    """ compute the velocity of the drone source with respect to the drone relay """
+    """ compute the speed of the drone source with respect to the drone relay """
     # distance between drone source and drone relay
     dist = euclidean_distance(drone_src.coords, simulator.depot.coords) - euclidean_distance(drone_relay.coords, simulator.depot.coords)
     # delay between drone source and drone relay
@@ -41,21 +41,21 @@ def one_hop_speed(drone_src: Entity, drone_relay: Entity, simulator: Simulator) 
     return dist / delay
 
 
-def two_hop_speed(drone_src: Entity, drone_one_hope_relay: Entity, drone_two_hope_relay: Entity, simulator: Simulator) -> float:
-    """ compute the velocity of the drone source with respect to the drone relay """
+def two_hop_speed(drone_src: Entity, drone_one_hop_relay: Entity, drone_two_hop_relay: Entity, simulator: Simulator) -> float:
+    """ compute the speed of the drone source with respect to the drone relay """
     # distance between drone one hop relay and drone two hop relay
-    dist = euclidean_distance(drone_one_hope_relay.coords, simulator.depot.coords) - euclidean_distance(drone_two_hope_relay.coords, simulator.depot.coords)
+    dist = euclidean_distance(drone_one_hop_relay.coords, simulator.depot.coords) - euclidean_distance(drone_two_hop_relay.coords, simulator.depot.coords)
 
     # delay between drone source and one hop relay
-    delay_one_hop = delay_between_drones(drone_src, drone_one_hope_relay, simulator)
+    delay_one_hop = delay_between_drones(drone_src, drone_one_hop_relay, simulator)
     # delay between drone one hop relay and two hop relay
-    delay_two_hop = delay_between_drones(drone_one_hope_relay, drone_two_hope_relay, simulator)      #one hop delay perchè devo passare per il one hop
+    delay_two_hop = delay_between_drones(drone_one_hop_relay, drone_two_hop_relay, simulator)      #one hop delay perchè devo passare per il one hop
 
     return dist / (delay_one_hop + delay_two_hop)
 
 
 def compute_required_speed(drone_i: Entity, remaining_ttl: int, simulator: Simulator) -> float:
-    """ compute the required velocity of the drone i such that it can reach the depot before the ttl expires """
+    """ compute the required speed of the drone i such that it can reach the depot before the ttl expires """
     # distance between drone i and drone d
     dist = euclidean_distance(drone_i.coords, simulator.depot.coords)
     remaining_ttl = 1 if remaining_ttl == 0 else remaining_ttl

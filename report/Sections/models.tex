@@ -14,6 +14,7 @@ That's because maybe the best drone to relay to is near the first hop neighbor.
 The algorithm proposed in the paper ``A Q-Learning-Based Topology-Aware Routing Protocol for Flying Ad Hoc Networks'' by Arafat and Moh is called QTAR.
 QTAR not only utilizes the information of single-hop neighbors
 but also uses the information of two-hop neighbors.
+
 The authors believe that this method improves the path discovery process,
 reduces the time required for calculating routes and improves the selection of the next-hop node.
 Although this technique increases routing overhead and system complexity.
@@ -22,7 +23,8 @@ the link lifetime to estimate the Hello interval and the link holding time. The 
 In this protocol, Q-Learning factors such as learning rate and reward factor are
 adaptively determined with regard to network conditions.
 For simplicity, this implementation uses a 2D environment instead of a 3D environment as proposed in the paper.
-The algoritgm can be divided into two modules: a module that constructs the topology and a module that selects the best relay and makes decisions based on the qTable.
+
+The algorithm can be divided into two modules: a module that constructs the topology and a module that selects the best relay and makes decisions based on the qTable.
 
 \subsubsection{Topology construction}
 
@@ -52,3 +54,7 @@ If we have the destination in the list of two-hop neighbors, we will choose it a
 Otherwise, we will choose the drone that has the highest Q-value.
 We will then update the Q-value of the drone that has been chosen as next hop.
 If there was no optimal drone to relay to, we will choose to keep the packet in the drone.
+
+
+
+

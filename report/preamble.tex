@@ -6,7 +6,10 @@
 
 \usepackage[export]{adjustbox}
 \usepackage{fancyhdr}
+\usepackage[labelfont=bf]{caption}
 
+\renewcommand*\descriptionlabel[1]{\hspace\leftmargin\textbf{#1}}
+\setlength{\headheight}{62.6863pt}
 \pagestyle{fancy}
 \fancyhf{}
 
