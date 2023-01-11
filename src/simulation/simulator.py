@@ -44,6 +44,7 @@ class Simulator:
                  communication_error_type=config.CHANNEL_ERROR_TYPE,
                  prob_size_cell_r=config.CELL_PROB_SIZE_R,
                  simulation_name=""):
+        self.moving_depot = True
         self.cur_step = 0
         self.drone_com_range = drone_com_range
         self.drone_sen_range = drone_sen_range
@@ -117,13 +118,11 @@ class Simulator:
 
         self.path_manager = utilities.PathManager(config.PATH_FROM_JSON, config.JSONS_PATH_PREFIX, self.seed)
         self.environment = Environment(self.env_width, self.env_height, self)
-
-        self.depot = Depot(self.depot_coordinates, self.depot_com_range, self)
-
         self.drones: list[Drone] = []
 
         # drone 0 is the first
-        speeds = np.random.uniform(0.5, 1.5, self.n_drones) * self.drone_speed
+        speeds = np.random.uniform(0.5, 1.5, self.n_drones+1) * self.drone_speed
+        self.depot = Depot(self.depot_coordinates, self.path_manager.path(self.n_drones+1, self), speeds[-1], self.depot_com_range, self)
         for i in range(self.n_drones):
             self.drones.append(Drone(i, self.path_manager.path(i, self), self.depot, self, speeds[i]))
         self.environment.add_drones(self.drones)
@@ -222,6 +221,9 @@ class Simulator:
                 drone.routing(self.drones, self.depot, cur_step)
                 drone.move(self.time_step_duration)
                 drone.update_battery(cur_step)
+
+            if self.moving_depot:
+                self.depot.move(self.time_step_duration)
 
             # in case we need probability map
             if config.ENABLE_PROBABILITIES:

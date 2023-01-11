@@ -216,46 +216,6 @@ class HelloPacket(Packet):
         self.one_hop_neighbors = one_hop_neighbors  # one hop neighbors N1
         self.two_hop_neighbors = two_hop_neighbors  # two hop neighbors N2
 
-
-# ------------------ Depot ----------------------
-class Depot(Entity):
-    """ The depot is an Entity. """
-
-    def __init__(self, coords: tuple[float, float], communication_range, simulator: Simulator):  # TODO: type
-        super().__init__(id(self), coords, simulator)
-        self.communication_range = communication_range
-
-        self.__buffer: list[Packet] = list()  # also with duplicated packets
-
-    def all_packets(self) -> list[Packet]:
-        return self.__buffer
-
-    def transfer_notified_packets(self, current_drone: Drone, cur_step: int):
-        """ function called when a drone wants to offload packets to the depot """
-
-        packets_to_offload = current_drone.all_packets()
-        self.__buffer += packets_to_offload
-
-        for pck in packets_to_offload:
-
-            if self.simulator.routing_algorithm.name not in "GEO" "RND" "GEOS":
-
-                feedback = 1
-                delivery_delay = cur_step - pck.event_ref.current_time
-
-                for drone in self.simulator.drones:
-                    drone.routing_algorithm.feedback(current_drone,
-                                                     pck.event_ref.identifier,
-                                                     delivery_delay,
-                                                     feedback)
-            # print(f"DEPOT -> Drone {current_drone.identifier} packet: {pck.event_ref} total packets in sim: {len(self.simulator.metrics.drones_packets_to_depot)}")
-
-            # add metrics: all the packets notified to the depot
-            self.simulator.metrics.drones_packets_to_depot.add((pck, cur_step))
-            self.simulator.metrics.drones_packets_to_depot_list.append((pck, cur_step))
-            pck.time_delivery = cur_step
-
-
 # ------------------ Drone ----------------------
 class Drone(Entity):
 
@@ -592,6 +552,45 @@ class Drone(Entity):
     def __hash__(self) -> int:
         return hash(self.identifier)
 
+
+# ------------------ Depot ----------------------
+class Depot(Drone):
+    """ The depot is an Entity. """
+
+    def __init__(self, coords: tuple[float, float], path: list[tuple[float, float]], speed: float, communication_range, simulator: Simulator):  # TODO: type
+        super().__init__(id(self), path, self, simulator, speed)
+        self.communication_range = communication_range
+        self.path = path
+
+        self.__buffer: list[Packet] = list()  # also with duplicated packets
+
+    def all_packets(self) -> list[Packet]:
+        return self.__buffer
+
+    def transfer_notified_packets(self, current_drone: Drone, cur_step: int):
+        """ function called when a drone wants to offload packets to the depot """
+
+        packets_to_offload = current_drone.all_packets()
+        self.__buffer += packets_to_offload
+
+        for pck in packets_to_offload:
+
+            if self.simulator.routing_algorithm.name not in "GEO" "RND" "GEOS":
+
+                feedback = 1
+                delivery_delay = cur_step - pck.event_ref.current_time
+
+                for drone in self.simulator.drones:
+                    drone.routing_algorithm.feedback(current_drone,
+                                                     pck.event_ref.identifier,
+                                                     delivery_delay,
+                                                     feedback)
+            # print(f"DEPOT -> Drone {current_drone.identifier} packet: {pck.event_ref} total packets in sim: {len(self.simulator.metrics.drones_packets_to_depot)}")
+
+            # add metrics: all the packets notified to the depot
+            self.simulator.metrics.drones_packets_to_depot.add((pck, cur_step))
+            self.simulator.metrics.drones_packets_to_depot_list.append((pck, cur_step))
+            pck.time_delivery = cur_step
 
 # ------------------ Environment ----------------------
 class Environment(SimulatedEntity):
