@@ -10,9 +10,9 @@ class QTARRouting(ADVANCED_Routing):
         ADVANCED_Routing.__init__(self, drone=drone, simulator=simulator)
         self.taken_actions = {}  # id event : (old_state, old_action)
         self.q_table = np.zeros(self.simulator.n_drones)
-        self.A = 0.7  # delay importance
-        self.B = 0.2  # speed importance
-        self.C = 0.1  # energy importance
+        self.A = 0.1  # delay importance
+        self.B = 0.5  # speed importance
+        self.C = 0.4  # energy importance
         self.rmin = -np.inf  # minimum reward
         self.rmax = -np.inf  # maximum reward
 
@@ -80,10 +80,10 @@ class QTARRouting(ADVANCED_Routing):
                 speed = util.two_hop_speed(self.drone, one_hop_neighbor, two_hop_neighbor, self.simulator)
                 remaining_ttl = self.simulator.packets_max_ttl - (self.simulator.cur_step - packet.time_step_creation)
                 required_speed = util.compute_required_speed(two_hop_neighbor, remaining_ttl, self.simulator)
+                selected_sum_speed += speed
+                selected_sum_energy += two_hop_neighbor.residual_energy / self.simulator.drone_max_energy
                 if speed > required_speed:
                     selected_drones.append((one_hop_neighbor, two_hop_neighbor))
-                    selected_sum_speed += speed
-                    selected_sum_energy += two_hop_neighbor.residual_energy / self.simulator.drone_max_energy
 
         # if there is a drone near the depot, select it
         if drone_near_depot_id != -1:

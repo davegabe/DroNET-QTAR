@@ -44,7 +44,7 @@ class Simulator:
                  communication_error_type=config.CHANNEL_ERROR_TYPE,
                  prob_size_cell_r=config.CELL_PROB_SIZE_R,
                  simulation_name=""):
-        self.moving_depot = True
+        self.moving_depot = False
         self.cur_step = 0
         self.drone_com_range = drone_com_range
         self.drone_sen_range = drone_sen_range
