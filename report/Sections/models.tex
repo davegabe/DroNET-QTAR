@@ -3,25 +3,24 @@
 \subsection{Q-Learning and UAVs}
 Q-learning can be used to design intelligent control policies for unmanned aerial vehicles (UAVs), also known as drones.
 For example, a Q-learning algorithm could be used to teach a drone to navigate through an unknown environment and avoid obstacles.
-In this case, we traing the model to let the agents learn what are the best drones to relay the packets to based on their two-hop neighbors.
+In this case, we train the model to let the agents learn what are the best drones to relay the packets to based on their two-hop neighbors.
 
 The one-hop neighbors are the drones that are within the communication range of the current drone, and the two-hop neighbors are the
 drones that are within the communication range of the one-hop neighbors. This allows the drones to make decisions based on the information
 they have about their neighbors, and the information they have about their neighbors' neighbors thus making the decisions more informed.
-That's because maybe the best drone to relay to is near the first hop neighbor.
 
 \subsection{QTAR}
-The algorithm proposed in the paper ``A Q-Learning-Based Topology-Aware Routing Protocol for Flying Ad Hoc Networks'' by Arafat and Moh is called QTAR.
-QTAR not only utilizes the information of single-hop neighbors
+The algorithm proposed in the paper ``A Q-Learning-Based Topology-Aware Routing Protocol for Flying Ad Hoc Networks'' (QTAR)
+not only utilizes the information of single-hop neighbors
 but also uses the information of two-hop neighbors.
 
 The authors believe that this method improves the path discovery process,
 reduces the time required for calculating routes and improves the selection of the next-hop node.
 Although this technique increases routing overhead and system complexity.
 QTAR considers information such as delay, speed, and energy when selecting next-hop node. Moreover, QTAR provides a technique for calculating
-the link lifetime to estimate the Hello interval and the link holding time. The link holding time is
-In this protocol, Q-Learning factors such as learning rate and reward factor are
-adaptively determined with regard to network conditions.
+the \textit{link holding time} to estimate the \textit{hello interval}.
+The link holding time is the time that a node prospects to keep a valid link with another drone, and the hello interval is the time between two consecutive hello messages.
+In this protocol, Q-Learning factors such as learning rate and reward factor are adaptively determined with regard to network conditions.
 For simplicity, this implementation uses a 2D environment instead of a 3D environment as proposed in the paper.
 
 The algorithm can be divided into two modules: a module that constructs the topology and a module that selects the best relay and makes decisions based on the qTable.
@@ -31,24 +30,22 @@ The algorithm can be divided into two modules: a module that constructs the topo
 For a drone to let everyone in the area to know its existance, it need to broadcast hello messages.
 A drone will also listen for hello messages.
 Here we have two phases: one hop neighbor discovery and two hop neighbor discovery.
-At the end of each phase, we update the hello message interval.
-The hello message interval should be lesser than the link holding timer of the minimum link
-duration timer.
+At the end of each phase, we update the hello message interval, that should be lesser than
+the minimum link holding time.
 
 \paragraph{One hop neighbor discovery}
-For every hello message received, record the presence of originator and
-calulate the link holding timer and the link duration.
+For every hello message received, the drone will record the presence of the sender and
+will update the link holding time. At the end of the phase, the drone will update the
+hello message interval to be lesser than the minimum link holding time.
 
 \paragraph{Two hop neighbor discovery}
-Each neighbor in his hello message will also include the list of its one-hop neighbors.
-For every neighbor included in each hello messages, update the two hop metrics such as the
-link duration and the link holding timer taking into account the one hop neighbor.
-
+Each neighbor in its hello message will also include the list of its one-hop neighbors.
+For every hello message received, the drone will record the presence of the two-hop neighbors and will compute the link holding time.
+Since the topology changes because the drones are moving, it's also important to keep track about which node connects to the two-hop neighbors.
 
 \subsubsection{Routing decisions}
-To decide the next hop, we will only consider the two-hop neighbors of the drone. % riga 18 di algo2
-We will choose the best two-hop neighbor and select as next hop the drone in between
-the current drone and the best two-hop neighbor.
+To decide the next hop (the drone to relay to), we will only consider the two-hop neighbors of the drone. % riga 18 di algo2
+We will choose the best two-hop neighbor and select as next hop the one-hop neighbor which connects to it.
 
 If we have the destination in the list of two-hop neighbors, we will choose it as next hop.
 Otherwise, we will choose the drone that has the highest Q-value.
