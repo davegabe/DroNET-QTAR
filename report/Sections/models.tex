@@ -25,7 +25,7 @@ For simplicity, this implementation uses a 2D environment instead of a 3D enviro
 
 The algorithm can be divided into two modules: a module that constructs the topology and a module that selects the best relay and makes decisions based on the qTable.
 
-\subsubsection{Topology construction}
+\subsubsection{Topology Construction}
 
 For a drone to let everyone in the area to know its existance, it need to broadcast hello messages.
 A drone will also listen for hello messages.
@@ -33,17 +33,17 @@ Here we have two phases: one hop neighbor discovery and two hop neighbor discove
 At the end of each phase, we update the hello message interval, that should be lesser than
 the minimum link holding time.
 
-\paragraph{One hop neighbor discovery}
+\paragraph{One-hop Neighbor Discovery}
 For every hello message received, the drone will record the presence of the sender and
 will update the link holding time. At the end of the phase, the drone will update the
 hello message interval to be lesser than the minimum link holding time.
 
-\paragraph{Two hop neighbor discovery}
+\paragraph{Two-hop Neighbor Discovery}
 Each neighbor in its hello message will also include the list of its one-hop neighbors.
 For every hello message received, the drone will record the presence of the two-hop neighbors and will compute the link holding time.
 Since the topology changes because the drones are moving, it's also important to keep track about which node connects to the two-hop neighbors.
 
-\subsubsection{Routing decisions}
+\subsubsection{Routing Decisions}
 To decide the next hop (the drone to relay to), we will only consider the two-hop neighbors of the drone. % riga 18 di algo2
 We will choose the best two-hop neighbor and select as next hop the one-hop neighbor which connects to it.
 
