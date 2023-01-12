@@ -65,7 +65,7 @@ class ADVANCED_Routing(metaclass=abc.ABCMeta):
         my_hello = HelloPacket(self.drone, cur_step, self.simulator, self.drone.coords,
                                self.drone.speed, self.drone.next_target(),
                                self.drone.link_holding_timer,
-                               self.drone.one_hop_neighbors, self.drone.two_hop_neighbors)
+                               self.drone.one_hop_neighbors)
 
         self.broadcast_message(my_hello, self.drone, drones, cur_step)
 

@@ -199,7 +199,7 @@ class ACKPacket(Packet):
 class HelloPacket(Packet):
     """ The hello message is responsible to give info about neighborhood """
 
-    def __init__(self, src_drone: Drone, time_step_creation: int, simulator: Simulator, cur_pos: tuple[float, float], speed, next_target: tuple[float, float], link_holding_timer: float = 0, one_hop_neighbors=[], two_hop_neighbors=dict()):
+    def __init__(self, src_drone: Drone, time_step_creation: int, simulator: Simulator, cur_pos: tuple[float, float], speed, next_target: tuple[float, float], link_holding_timer: float = 0, one_hop_neighbors=[]):
         super().__init__(time_step_creation, simulator, None)
         self.cur_pos = cur_pos
         self.speed = speed
@@ -214,7 +214,6 @@ class HelloPacket(Packet):
 
         # list of neighbors
         self.one_hop_neighbors = one_hop_neighbors  # one hop neighbors N1
-        self.two_hop_neighbors = two_hop_neighbors  # two hop neighbors N2
 
 # ------------------ Drone ----------------------
 class Drone(Entity):
