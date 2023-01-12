@@ -22,15 +22,15 @@ of two-hop neighbors (Fig.~\ref{fig:topology}).
 
 The main contributions given by the given article are:
 \begin{itemize}
-    \item \textbf{Topology aware routing}: QTAR can operate in highly dynamic environments. For
+    \item \textbf{Topology-Aware Routing}: QTAR can operate in highly dynamic environments. For
     topology control, two-hop neighbor information is utilized to estimate the environment and node states. By
     using two-hop neighbor information, we obtain the node
     position, link quality, such as delay, velocity, and residual energy level. The two-hop-based geographic routing
     scheme improves the routing performance and ensures
-    successful forwarding from source to destination
-    \item \textbf{Minimazed communication }: the limited battery power of the dones means that the communication delay must be short. So we change dinamically the hello message interval and the link holding timer to minimize the communication delay basing on the link duration when the topology changes.
-    \item \textbf{Loop free routing}
-    \item \textbf{Adaptive Q-Learning}: The Q-learning method learns from
+    successful forwarding from source to destination.
+    \item \textbf{Minimazed Communication}: the limited battery power of the dones means that the communication delay must be short. So we change dinamically the hello message interval and the link holding timer to minimize the communication delay basing on the link duration when the topology changes.
+    \item \textbf{Loop Free Routing}: two-hop neighbor information minimize the number of hops, thus reducing the probability of loops.
+    \item \textbf{Adaptive Q-Learning}: the Q-learning method learns from
     the network environment and allows a quick adaptation.
-    \item \textbf{Load Balance}
+    \item \textbf{Load Balance}: QTAR doesn't always the shortest path but it takes into account also the residual energy. If a drone is overworked, it will consume more and eventually dying (thus shortening the network lifetime).
 \end{itemize}
