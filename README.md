@@ -1,4 +1,6 @@
-# DroNET - Autonomous Networking 2022-2023
+# DroNET - QTAR
+
+This repository contains the code for the second homework of the Autonomous Networking course at the University of La Sapienza, Rome.
 
 ## What is DroNET?
 DroNET is a Python based simulator for experimenting routing algorithms and mobility models on unmanned aerial vehicle 
